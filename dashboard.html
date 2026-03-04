@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Wallet — Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- ── Algorand SDK (browser bundle) ── -->
+  <script src="https://unpkg.com/algosdk@2.7.0/dist/browser/algosdk.min.js"></script>
+
+  <!-- ── Pera Wallet Connect ── -->
+  <script src="https://unpkg.com/@perawallet/connect@1.3.4/dist/umd/index.js"></script>
+
+  <!-- ── SDK Load Check ── -->
+  <script>
+    window.addEventListener('load', () => {
+      const algoOK = typeof algosdk !== 'undefined';
+      const peraOK = typeof window.peraWalletConnect !== 'undefined' || typeof PeraWalletConnect !== 'undefined';
+      console.log('[Campus Wallet] algosdk loaded:', algoOK, '| PeraWallet loaded:', peraOK);
+      if (!algoOK) console.error('❌ algosdk CDN failed to load!');
+      if (!peraOK) console.error('❌ Pera Wallet CDN failed to load!');
+      if (algoOK && peraOK) console.log('✅ All SDKs loaded successfully');
+    });
+  </script>
+
+  <style>
+    .mini-chart {
+      height: 50px; display: flex; align-items: flex-end; gap: 4px;
+      padding-top: 10px;
+    }
+    .bar {
+      flex: 1; border-radius: 3px 3px 0 0;
+      background: linear-gradient(180deg, var(--blue), transparent);
+      min-height: 10px;
+      transition: height 0.5s ease;
+    }
+    .qr-addr {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem; color: var(--muted);
+      word-break: break-all; text-align: center;
+      margin-bottom: 14px; letter-spacing: 0.05em;
+      line-height: 1.6;
+    }
+    .send-max {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem; color: var(--blue);
+      cursor: pointer; position: absolute; right: 14px; top: 50%;
+      transform: translateY(-50%);
+    }
+    .modal { position: relative; }
+    .empty-section {
+      padding: 60px 20px; text-align: center;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.8rem; color: rgba(148,163,184,0.3);
+      letter-spacing: 0.15em;
+    }
+    .network-indicator {
+      display: flex; align-items: center; gap: 8px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem; color: var(--success);
+      letter-spacing: 0.1em;
+    }
+    .net-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+      animation: blink 2s ease-in-out infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #refreshBalance {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 1rem; transition: color 0.2s;
+      display: inline-flex; align-items: center;
+    }
+    #refreshBalance:hover { color: var(--blue); }
+    .receive-qr-section {
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .menu-toggle {
+      display: none;
+      position: fixed; top: 16px; left: 16px;
+      z-index: 200; background: rgba(15,23,42,0.9);
+      border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 12px;
+      color: var(--text); cursor: pointer; font-size: 1.1rem;
+    }
+    @media (max-width: 900px) {
+      .menu-toggle { display: block; }
+      .sidebar.open { transform: translateX(0) !important; }
+    }
+    .chart-label {
+      display: flex; justify-content: space-between;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem; color: var(--muted);
+      margin-top: 6px;
+    }
+    .sell-warn {
+      background: rgba(236,72,153,0.08);
+      border: 1px solid rgba(236,72,153,0.2);
+      border-radius: 10px; padding: 12px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem; color: rgba(236,72,153,0.7);
+      margin-bottom: 20px; letter-spacing: 0.05em;
+    }
+
+    /* ── Pera Connect Banner ── */
+    .pera-banner {
+      display: flex; align-items: center; gap: 16px;
+      padding: 16px 24px;
+      background: rgba(59,130,246,0.06);
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: 16px;
+      margin-bottom: 24px;
+    }
+    .pera-banner-icon { font-size: 1.8rem; }
+    .pera-banner-text { flex: 1; }
+    .pera-banner-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.8rem; font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .pera-banner-sub {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem; color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    /* ── Connected Badge ── */
+    .pera-connected-panel {
+      display: none; align-items: center; gap: 14px;
+      padding: 12px 20px;
+      background: rgba(34,197,94,0.06);
+      border: 1px solid rgba(34,197,94,0.25);
+      border-radius: 14px;
+      margin-bottom: 24px;
+    }
+    .pera-conn-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 10px var(--success);
+      animation: blink 2s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+    .pera-conn-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem; color: var(--success);
+      letter-spacing: 0.1em; flex: 1;
+    }
+    .pera-conn-addr {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem; color: var(--muted);
+    }
+
+    /* ── Testnet notice in buy modal ── */
+    .testnet-notice {
+      background: rgba(139,92,246,0.08);
+      border: 1px solid rgba(139,92,246,0.2);
+      border-radius: 10px; padding: 14px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem; color: var(--muted);
+      line-height: 1.8; margin-bottom: 20px;
+    }
+    .testnet-notice a { color: var(--blue); text-decoration: none; }
+  </style>
+</head>
+<body data-page="dashboard">
+
+<div id="loader" class="loader-overlay">
+  <div class="loader-ring"></div>
+  <div class="loader-text">LOADING DASHBOARD...</div>
+</div>
+
+<div class="scanline"></div>
+
+<div class="bg-layer">
+  <div class="bg-gradient"></div>
+  <div class="cyber-grid"></div>
+</div>
+
+<div class="particles"></div>
+
+<button class="menu-toggle" id="menuToggle">☰</button>
+
+<div class="dashboard-layout">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-text">CAMPUS WALLET</div>
+      <div class="sidebar-logo-sub">⬡ ALGO NETWORK · TESTNET</div>
+    </div>
+
+    <button class="nav-item active" data-section="overview">
+      <span class="nav-icon">⬡</span> Dashboard
+    </button>
+    <button class="nav-item" data-section="send" data-action="send">
+      <span class="nav-icon">📤</span> Send
+    </button>
+    <button class="nav-item" data-section="receive">
+      <span class="nav-icon">📥</span> Receive
+    </button>
+    <button class="nav-item" data-section="buy" data-action="buy">
+      <span class="nav-icon">💳</span> Buy
+    </button>
+    <button class="nav-item" data-section="sell" data-action="sell">
+      <span class="nav-icon">💸</span> Sell
+    </button>
+    <button class="nav-item" data-section="transactions">
+      <span class="nav-icon">🔄</span> Transactions
+      <span class="nav-badge">NEW</span>
+    </button>
+    <button class="nav-item" data-section="settings">
+      <span class="nav-icon">⚙</span> Settings
+    </button>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="sidebar-user">
+      <div class="user-avatar">⬡</div>
+      <div class="user-info">
+        <div class="user-name">Loading...</div>
+        <div class="user-status">● ONLINE</div>
+      </div>
+    </div>
+
+    <button class="nav-item logout-btn" style="color: var(--error); margin-top: 4px;">
+      <span class="nav-icon">⏏</span> Logout
+    </button>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <div class="main-header">
+      <div>
+        <div class="main-greeting gradient-text">CONTROL CENTER</div>
+        <div class="main-date"></div>
+      </div>
+      <div class="header-actions">
+        <div class="network-indicator">
+          <div class="net-dot" style="background:#ef4444;box-shadow:0 0 8px #ef4444;"></div>
+          NOT CONNECTED
+        </div>
+        <button class="icon-btn" title="Notifications">🔔</button>
+        <button class="icon-btn" title="Settings">⚙</button>
+      </div>
+    </div>
+
+    <!-- OVERVIEW SECTION -->
+    <div class="section-panel active" id="section-overview">
+
+      <!-- ── PERA WALLET CONNECT BANNER ── -->
+      <div class="pera-banner" id="peraConnectBanner">
+        <div class="pera-banner-icon">🔌</div>
+        <div class="pera-banner-text">
+          <div class="pera-banner-title">Connect Pera Wallet</div>
+          <div class="pera-banner-sub">Connect to Algorand Testnet to see your real balance and transactions</div>
+        </div>
+        <button id="peraConnectBtn" class="btn btn-primary" style="font-size:0.7rem;padding:12px 20px;white-space:nowrap;">
+          <div class="spinner"></div>
+          <span class="btn-text">⬡ &nbsp;Connect Pera</span>
+        </button>
+      </div>
+
+      <!-- ── CONNECTED BADGE ── -->
+      <div class="pera-connected-panel" id="peraConnectedPanel">
+        <div class="pera-conn-dot"></div>
+        <div class="pera-conn-label">PERA WALLET · TESTNET</div>
+        <div class="pera-conn-addr" id="connectedAddr">—</div>
+        <button id="peraDisconnectBtn" class="btn btn-ghost" style="font-size:0.65rem;padding:6px 14px;">DISCONNECT</button>
+      </div>
+
+      <!-- WALLET CARD -->
+      <div class="wallet-card fade-in">
+        <div class="wallet-top">
+          <div>
+            <div class="wallet-label">TOTAL BALANCE</div>
+            <div class="wallet-balance">
+              <span id="mainBalance">0.00</span>
+              <span>ALGO</span>
+            </div>
+            <div class="wallet-change">▲ +2.34% today · ≈ $<span id="usdBal">0.00</span> USD</div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap: 12px; align-items: flex-end;">
+            <div class="wallet-chip"></div>
+            <button id="refreshBalance" title="Refresh balance">↻</button>
+          </div>
+        </div>
+
+        <!-- Mini chart -->
+        <div class="mini-chart" id="miniChart"></div>
+        <div class="chart-label"><span>7D</span><span>↑ Growing</span></div>
+
+        <div class="wallet-bottom" style="margin-top: 20px;">
+          <div>
+            <div class="wallet-label">WALLET ADDRESS</div>
+            <div class="wallet-addr wallet-addr-display">Loading...</div>
+          </div>
+          <button class="wallet-copy-btn copy-addr-btn">⧉ COPY</button>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div class="stats-row fade-in fade-in-delay-1">
+        <div class="stat-card">
+          <div class="stat-card-label">TOTAL SENT</div>
+          <div class="stat-card-value" id="statSent">956.50 Ⓐ</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">TOTAL RECEIVED</div>
+          <div class="stat-card-value" id="statRecv">1,247.80 Ⓐ</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">TRANSACTIONS</div>
+          <div class="stat-card-value" id="statTxCount">48</div>
+        </div>
+      </div>
+
+      <!-- ACTION GRID -->
+      <div class="grid-4 fade-in fade-in-delay-2">
+        <div class="action-card send" data-action="send">
+          <div class="action-icon">📤</div>
+          <div class="action-label">SEND</div>
+        </div>
+        <div class="action-card receive" data-action="receive">
+          <div class="action-icon">📥</div>
+          <div class="action-label">RECEIVE</div>
+        </div>
+        <div class="action-card buy" data-action="buy">
+          <div class="action-icon">💳</div>
+          <div class="action-label">BUY</div>
+        </div>
+        <div class="action-card sell" data-action="sell">
+          <div class="action-icon">💸</div>
+          <div class="action-label">SELL</div>
+        </div>
+      </div>
+
+      <!-- TX + QR -->
+      <div class="grid-2 fade-in fade-in-delay-3">
+        <!-- TX LIST -->
+        <div>
+          <div class="section-header">
+            <div class="section-title">RECENT TRANSACTIONS</div>
+            <div class="section-link" onclick="switchSection('transactions')">VIEW ALL →</div>
+          </div>
+          <div class="tx-list" id="txList">
+            <div style="text-align:center; padding: 30px; color: var(--muted); font-family: 'Share Tech Mono', monospace; font-size: 0.75rem;">
+              LOADING TRANSACTIONS...
+            </div>
+          </div>
+        </div>
+
+        <!-- QR SECTION -->
+        <div>
+          <div class="section-header">
+            <div class="section-title">RECEIVE ADDRESS</div>
+          </div>
+          <div class="receive-qr-section">
+            <div class="qr-box">
+              <canvas id="qrCanvas" class="qr-canvas"></canvas>
+            </div>
+            <div class="qr-addr wallet-addr-display" style="font-size: 0.65rem; padding: 0 10px;"></div>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn btn-secondary copy-addr-btn" style="font-size: 0.65rem; padding: 10px 18px;">
+                ⧉ COPY ADDRESS
+              </button>
+              <button class="btn btn-ghost" id="downloadQR" style="font-size: 0.7rem;">
+                ⬇ QR
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TRANSACTIONS SECTION -->
+    <div class="section-panel" id="section-transactions">
+      <div class="section-header" style="margin-bottom: 24px;">
+        <div class="section-title">TRANSACTION HISTORY</div>
+        <div class="section-link">EXPORT CSV →</div>
+      </div>
+      <div class="tx-list" id="txListFull"></div>
+    </div>
+
+    <!-- RECEIVE SECTION -->
+    <div class="section-panel" id="section-receive">
+      <div class="section-header" style="margin-bottom: 24px;">
+        <div class="section-title">RECEIVE ALGO</div>
+      </div>
+      <div class="glass" style="padding: 40px; max-width: 440px; text-align: center;">
+        <p style="color: var(--muted); margin-bottom: 28px; font-size: 0.9rem;">Share your address or QR code to receive ALGO.</p>
+        <div class="qr-box" style="margin-bottom: 20px;">
+          <canvas id="qrCanvas2" class="qr-canvas"></canvas>
+        </div>
+        <div class="qr-addr wallet-addr-display"></div>
+        <button class="btn btn-primary copy-addr-btn" style="width: 100%;">⧉ COPY ADDRESS</button>
+      </div>
+    </div>
+
+    <!-- SETTINGS SECTION -->
+    <div class="section-panel" id="section-settings">
+      <div class="section-header" style="margin-bottom: 24px;">
+        <div class="section-title">SETTINGS</div>
+      </div>
+      <div style="max-width: 600px;">
+
+        <div class="settings-group">
+          <div class="settings-group-title">// SECURITY</div>
+          <div class="settings-item">
+            <div>
+              <div class="settings-label">Two-Factor Authentication</div>
+              <div class="settings-sub">TOTP / HARDWARE KEY</div>
+            </div>
+            <div class="toggle on"></div>
+          </div>
+          <div class="settings-item">
+            <div>
+              <div class="settings-label">Biometric Login</div>
+              <div class="settings-sub">FINGERPRINT · FACE ID</div>
+            </div>
+            <div class="toggle on"></div>
+          </div>
+          <div class="settings-item">
+            <div>
+              <div class="settings-label">Auto-Lock (5 min)</div>
+              <div class="settings-sub">SCREEN TIMEOUT LOCK</div>
+            </div>
+            <div class="toggle"></div>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <div class="settings-group-title">// NETWORK</div>
+          <div class="settings-item">
+            <div>
+              <div class="settings-label">Network</div>
+              <div class="settings-sub">ALGO MAINNET</div>
+            </div>
+            <span style="font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; color: var(--success);">● LIVE</span>
+          </div>
+          <div class="settings-item">
+            <div>
+              <div class="settings-label">Push Notifications</div>
+              <div class="settings-sub">TX ALERTS · PRICE CHANGES</div>
+            </div>
+            <div class="toggle on"></div>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <div class="settings-group-title">// ACCOUNT</div>
+          <div class="settings-item">
+            <div>
+              <div class="settings-label">Username</div>
+              <div class="settings-sub user-name">Loading...</div>
+            </div>
+            <button class="btn btn-secondary" style="font-size: 0.65rem; padding: 8px 14px;">EDIT</button>
+          </div>
+          <div class="settings-item">
+            <div>
+              <div class="settings-label">Export Private Key</div>
+              <div class="settings-sub">ENCRYPTED BACKUP</div>
+            </div>
+            <button class="btn btn-secondary" style="font-size: 0.65rem; padding: 8px 14px;" onclick="showToast('Key exported to encrypted vault', 'success')">EXPORT</button>
+          </div>
+        </div>
+
+        <button class="btn btn-danger logout-btn" style="margin-top: 10px;">⏏ &nbsp;DISCONNECT WALLET</button>
+
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODALS -->
+<!-- SEND -->
+<div class="modal-overlay" id="sendModal">
+  <div class="modal">
+    <button class="modal-close modal-close-btn">✕</button>
+    <div class="modal-title">📤 Send ALGO</div>
+    <p class="modal-sub">Transfer ALGO to any wallet address on the network</p>
+    <form id="sendForm">
+      <div class="input-group">
+        <label>// RECIPIENT.address</label>
+        <input type="text" id="sendAddr" class="cyber-input" placeholder="ABCD1234..." autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>// TRANSFER.amount</label>
+        <div style="position:relative;">
+          <input type="number" id="sendAmt" class="cyber-input" placeholder="0.00" min="0.01" step="0.01">
+          <span class="send-max" onclick="document.getElementById('sendAmt').value = (parseFloat(document.getElementById('mainBalance').textContent) * 0.99).toFixed(2)">MAX</span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>// MEMO (optional)</label>
+        <input type="text" class="cyber-input" placeholder="Optional note..." maxlength="80">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width: 100%;">
+        <div class="spinner"></div>
+        <span class="btn-text">📤 &nbsp;BROADCAST TRANSACTION</span>
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- RECEIVE -->
+<div class="modal-overlay" id="receiveModal">
+  <div class="modal" style="text-align: center;">
+    <button class="modal-close modal-close-btn">✕</button>
+    <div class="modal-title" style="justify-content: center;">📥 Receive ALGO</div>
+    <p class="modal-sub" style="text-align: center;">Share your address to receive funds</p>
+    <div class="qr-box" style="margin-bottom: 16px;">
+      <canvas id="qrModal" class="qr-canvas" width="160" height="160"></canvas>
+    </div>
+    <div class="qr-addr wallet-addr-display"></div>
+    <button class="btn btn-primary copy-addr-btn" style="width: 100%;">⧉ COPY ADDRESS</button>
+  </div>
+</div>
+
+<!-- BUY -->
+<div class="modal-overlay" id="buyModal">
+  <div class="modal">
+    <button class="modal-close modal-close-btn">✕</button>
+    <div class="modal-title">💳 Get Testnet ALGO</div>
+    <p class="modal-sub">Fund your wallet using the Algorand Testnet Dispenser</p>
+    <form id="buyForm">
+      <div class="testnet-notice">
+        🧪 <strong>TESTNET MODE</strong><br><br>
+        Real ALGO purchases are not available in this demo.<br>
+        Get free Testnet ALGO from the official dispenser:<br><br>
+        <a href="https://bank.testnet.algorand.network/" target="_blank">
+          ↗ bank.testnet.algorand.network
+        </a>
+      </div>
+      <div class="input-group">
+        <label>// YOUR TESTNET ADDRESS</label>
+        <input type="text" id="buyAddrDisplay" class="cyber-input" readonly
+          style="opacity:0.6;cursor:default;" placeholder="Connect Pera Wallet first">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width: 100%;">
+        ↗ &nbsp;Open Testnet Dispenser
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- SELL -->
+<div class="modal-overlay" id="sellModal">
+  <div class="modal">
+    <button class="modal-close modal-close-btn">✕</button>
+    <div class="modal-title">💸 Sell / Swap ALGO</div>
+    <p class="modal-sub">Trade ALGO via Tinyman DEX on Testnet</p>
+    <div class="sell-warn">
+      ⚠ TESTNET MODE — Use Tinyman Testnet to swap ALGO for other ASAs
+    </div>
+    <div class="input-group">
+      <label>// SELL.amount (ALGO)</label>
+      <input type="number" id="sellAmt" class="cyber-input" placeholder="50" min="0.001" step="0.001">
+    </div>
+    <div class="input-group">
+      <label>// SWAP.destination</label>
+      <select class="cyber-input" style="cursor: pointer;">
+        <option>🔄 Via Tinyman DEX (Testnet)</option>
+        <option>🏦 Pera Wallet App</option>
+      </select>
+    </div>
+    <button class="btn btn-danger" style="width: 100%;" onclick="handleSell()">
+      💸 &nbsp;OPEN TINYMAN DEX
+    </button>
+  </div>
+</div>
+
+<script src="js/script.js"></script>
+<script>
+// ── Mobile sidebar toggle
+document.getElementById('menuToggle').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+});
+
+// ── Nav actions that open modals (send/buy/sell sidebar buttons)
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.nav-item[data-action]').forEach(item => {
+    item.addEventListener('click', () => {
+      const modal = document.getElementById(item.dataset.action + 'Modal');
+      if (modal) modal.classList.add('open');
+    });
+  });
+
+  // Receive section: wire QR + copy once wallet connects (also done in onWalletConnected)
+  const qr2 = document.getElementById('qrCanvas2');
+  const qrModal = document.getElementById('qrModal');
+  // They will be populated by onWalletConnected() after Pera connects
+});
+</script>
+</body>
+</html>

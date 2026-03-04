@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Wallet — Welcome</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .feature-chips {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 36px;
+    }
+    .chip {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: 100px;
+      padding: 5px 14px;
+      letter-spacing: 0.1em;
+    }
+    .back-link {
+      position: fixed; top: 20px; left: 20px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      cursor: pointer;
+      letter-spacing: 0.15em;
+      text-decoration: none;
+      display: flex; align-items: center; gap: 8px;
+      transition: color 0.2s;
+      z-index: 10;
+    }
+    .back-link:hover { color: var(--blue); }
+  </style>
+</head>
+<body data-page="onboarding">
+
+<div id="loader" class="loader-overlay">
+  <div class="loader-ring"></div>
+  <div class="loader-text">CONNECTING TO NETWORK...</div>
+</div>
+
+<div class="scanline"></div>
+
+<div class="bg-layer">
+  <div class="bg-gradient"></div>
+  <div class="cyber-grid"></div>
+</div>
+
+<div class="particles"></div>
+
+<a href="index.html" class="back-link">← BACK</a>
+
+<div class="page">
+  <div class="glass onboarding-panel fade-in">
+
+    <div class="on-icon">⬡</div>
+
+    <h2 class="on-title gradient-text">Welcome to the Network</h2>
+    <p class="on-sub">
+      Join thousands of students managing their ALGO assets with<br>
+      the most secure campus wallet in the ecosystem.
+    </p>
+
+    <div class="feature-chips">
+      <span class="chip">🔒 END-TO-END ENCRYPTED</span>
+      <span class="chip">⚡ INSTANT TRANSFERS</span>
+      <span class="chip">🏛️ NON-CUSTODIAL</span>
+    </div>
+
+    <a href="create.html" class="btn btn-primary" style="width:100%; margin-bottom: 14px;">
+      ✦ &nbsp;Create New Wallet
+    </a>
+
+    <div class="on-divider">or</div>
+
+    <a href="login.html" class="btn btn-secondary" style="width:100%; margin-top: 14px;">
+      ◈ &nbsp;Already a User? Login
+    </a>
+
+    <p style="text-align:center; margin-top:24px; font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; color: rgba(148,163,184,0.4); letter-spacing: 0.15em;">
+      NON-CUSTODIAL · OPEN SOURCE · AUDITED
+    </p>
+
+  </div>
+</div>
+
+<script src="js/script.js"></script>
+</body>
+</html>

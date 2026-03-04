@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Wallet — Decentralized Power</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .hero-logo-icon {
+      width: 90px; height: 90px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+      border-radius: 24px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.8rem;
+      margin: 0 auto 30px;
+      box-shadow: 0 0 60px rgba(139,92,246,0.5);
+      animation: fadeIn 0.8s ease forwards;
+    }
+    .hero-divider {
+      width: 60px; height: 3px;
+      background: linear-gradient(90deg, var(--blue), var(--purple), var(--pink));
+      margin: 24px auto;
+      border-radius: 2px;
+      animation: fadeIn 1s ease 0.5s forwards; opacity: 0;
+    }
+    .floating-tags {
+      position: absolute;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .ftag {
+      position: absolute;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      color: rgba(59,130,246,0.25);
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body data-page="index">
+
+<div id="loader" class="loader-overlay">
+  <div class="loader-ring"></div>
+  <div class="loader-text">INITIALIZING NETWORK...</div>
+</div>
+
+<div class="scanline"></div>
+
+<div class="bg-layer">
+  <div class="bg-gradient"></div>
+  <div class="cyber-grid"></div>
+</div>
+
+<div class="particles"></div>
+
+<div class="floating-tags" id="ftags"></div>
+
+<div class="page hero-page">
+
+  <div class="hero-logo-icon">⬡</div>
+
+  <div class="hero-badge">🟢 &nbsp;MAINNET LIVE — v2.4.1</div>
+
+  <h1 class="hero-title gradient-text">CAMPUS<br>WALLET</h1>
+
+  <div class="hero-divider"></div>
+
+  <p class="hero-tagline fade-in fade-in-delay-3">
+    Decentralized Power for the Next Generation
+  </p>
+
+  <p class="hero-sub fade-in fade-in-delay-4">
+    A next-gen Web3 wallet built for campus life. Send, receive, trade,
+    and stake ALGO assets with military-grade security and zero friction.
+  </p>
+
+  <button class="btn btn-primary hero-enter-btn" id="enterBtn">
+    ⚡ &nbsp;ENTER THE NETWORK
+  </button>
+
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-num" data-count="24700" data-decimals="0">0</div>
+      <div class="stat-label">Active Wallets</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" data-count="1.2" data-decimals="1">0</div>
+      <div class="stat-label">ALGO Billion Locked</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" data-count="99.9" data-decimals="1">0</div>
+      <div class="stat-label">% Uptime</div>
+    </div>
+  </div>
+
+</div>
+
+<script src="js/script.js"></script>
+<script>
+// Floating code tags
+const tags = ['0x4E3a2F', 'SHA-256', 'AES-128', 'TXN:PENDING', 'BLOCK:12841', 'GAS:0.003',
+  'STAKE:ON', 'NODE:LIVE', 'HASH:8b3f', '2FA:ENABLED', 'ENCRYPT', 'ALGO'];
+const container = document.getElementById('ftags');
+tags.forEach((tag, i) => {
+  const el = document.createElement('div');
+  el.className = 'ftag';
+  el.textContent = tag;
+  el.style.cssText = `
+    left: ${5 + Math.random() * 90}%;
+    top: ${5 + Math.random() * 90}%;
+    animation: fadeIn ${2 + Math.random() * 3}s ease ${Math.random() * 3}s infinite alternate;
+  `;
+  container.appendChild(el);
+});
+</script>
+</body>
+</html>

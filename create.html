@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Wallet — Create Wallet</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .eye-btn {
+      position: absolute; right: 14px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none;
+      color: var(--muted); cursor: pointer;
+      font-size: 1rem; padding: 4px;
+      transition: color 0.2s;
+    }
+    .eye-btn:hover { color: var(--blue); }
+    .pass-wrapper { position: relative; }
+    .strength-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--muted);
+      letter-spacing: 0.15em;
+      margin-top: 6px;
+      display: flex; justify-content: space-between;
+    }
+    .terms-row {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 20px;
+    }
+    .terms-row input[type=checkbox] { accent-color: var(--blue); width: 16px; height: 16px; }
+    .terms-row label {
+      font-size: 0.8rem; color: var(--muted);
+      font-family: 'Share Tech Mono', monospace;
+    }
+    .terms-row a { color: var(--blue); text-decoration: none; }
+    .success-overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(10,15,30,0.97);
+      display: none;
+      flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 20px;
+      text-align: center;
+    }
+    .success-icon {
+      width: 90px; height: 90px;
+      background: linear-gradient(135deg, var(--success), #16a34a);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem;
+      box-shadow: 0 0 60px rgba(34,197,94,0.5);
+      animation: orbPulse 2s ease-in-out infinite;
+    }
+    .success-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.6rem; font-weight: 900;
+      color: var(--success);
+    }
+    .success-addr {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.8rem; color: var(--muted);
+    }
+    .progress-bar {
+      width: 200px; height: 3px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue), var(--purple));
+      border-radius: 2px;
+      animation: progressGrow 3s linear forwards;
+    }
+    @keyframes progressGrow { from { width: 0; } to { width: 100%; } }
+    .back-link {
+      position: fixed; top: 20px; left: 20px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem; color: var(--muted);
+      cursor: pointer; letter-spacing: 0.15em;
+      text-decoration: none; display: flex;
+      align-items: center; gap: 8px;
+      transition: color 0.2s; z-index: 10;
+    }
+    .back-link:hover { color: var(--blue); }
+    .terminal-line {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem; color: rgba(59,130,246,0.4);
+      margin-bottom: 20px; letter-spacing: 0.1em;
+    }
+    .terminal-line span { color: var(--blue); }
+  </style>
+</head>
+<body data-page="create">
+
+<div id="loader" class="loader-overlay">
+  <div class="loader-ring"></div>
+  <div class="loader-text">LOADING SECURE TERMINAL...</div>
+</div>
+
+<div class="scanline"></div>
+
+<div class="bg-layer">
+  <div class="bg-gradient"></div>
+  <div class="cyber-grid"></div>
+</div>
+
+<div class="particles"></div>
+
+<a href="onboarding.html" class="back-link">← BACK</a>
+
+<div id="successOverlay" class="success-overlay">
+  <div class="success-icon">✓</div>
+  <div class="success-title">WALLET CREATED</div>
+  <div class="success-addr" id="succAddr">Loading address...</div>
+  <p style="color: var(--muted); font-size: 0.85rem;">Redirecting to dashboard...</p>
+  <div class="progress-bar"><div class="progress-fill"></div></div>
+</div>
+
+<div class="page">
+  <div class="glass create-panel fade-in">
+
+    <div class="form-header">
+      <div class="form-icon">⬡</div>
+      <div>
+        <div class="form-title">Create New Wallet</div>
+        <div class="form-sub">> SECURE KEYGEN TERMINAL v2.4</div>
+      </div>
+    </div>
+
+    <div class="terminal-line">> Initializing cryptographic key generator...<br>
+    > Protocol: <span>ALGO-ED25519</span> · Entropy: <span>256-bit</span></div>
+
+    <form id="createForm">
+
+      <div class="input-group">
+        <label>// IDENTITY.username</label>
+        <input type="text" id="username" class="cyber-input"
+          placeholder="choose_your_handle" autocomplete="off">
+      </div>
+
+      <div class="input-group">
+        <label>// SECURITY.password</label>
+        <div class="pass-wrapper">
+          <input type="password" id="password" class="cyber-input"
+            placeholder="••••••••••••" autocomplete="new-password">
+          <button type="button" class="eye-btn" onclick="togglePass('password', this)">👁</button>
+        </div>
+        <div class="strength-bar">
+          <div class="strength-fill"></div>
+        </div>
+        <div class="strength-label">
+          <span>PASSWORD STRENGTH</span>
+          <span id="strengthTxt">WEAK</span>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>// SECURITY.confirm_password</label>
+        <div class="pass-wrapper">
+          <input type="password" id="confirm" class="cyber-input"
+            placeholder="••••••••••••" autocomplete="new-password">
+          <button type="button" class="eye-btn" onclick="togglePass('confirm', this)">👁</button>
+        </div>
+      </div>
+
+      <div class="terms-row">
+        <input type="checkbox" id="terms">
+        <label for="terms">I agree to the <a href="#">Terms of Protocol</a> and <a href="#">Privacy Matrix</a></label>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%; font-size: 0.8rem; padding: 16px;">
+        <div class="spinner"></div>
+        <span class="btn-text">⚡ &nbsp;GENERATE WALLET</span>
+      </button>
+
+    </form>
+
+    <p style="text-align:center; margin-top: 20px; font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; color: rgba(148,163,184,0.3); letter-spacing: 0.15em;">
+      KEYS NEVER LEAVE YOUR DEVICE
+    </p>
+
+  </div>
+</div>
+
+<script src="js/script.js"></script>
+<script>
+function togglePass(id, btn) {
+  const input = document.getElementById(id);
+  input.type = input.type === 'password' ? 'text' : 'password';
+  btn.textContent = input.type === 'password' ? '👁' : '🙈';
+}
+
+// Strength text update
+document.getElementById('password').addEventListener('input', function() {
+  const val = this.value;
+  let strength = 0;
+  if (val.length > 5) strength += 25;
+  if (val.length > 9) strength += 25;
+  if (/[A-Z]/.test(val) && /[0-9]/.test(val)) strength += 25;
+  if (/[^A-Za-z0-9]/.test(val)) strength += 25;
+  const labels = { 0: 'WEAK', 25: 'FAIR', 50: 'GOOD', 75: 'STRONG', 100: 'ULTRA' };
+  document.getElementById('strengthTxt').textContent = labels[Math.floor(strength/25)*25] || 'WEAK';
+});
+
+document.getElementById('createForm').addEventListener('submit', function(e) {
+  if (!document.getElementById('terms').checked) {
+    e.preventDefault();
+    e.stopPropagation();
+    // Use global showToast after script loads
+    setTimeout(() => window.showToast && showToast('Please accept the Terms of Protocol', 'error'), 0);
+  }
+});
+</script>
+</body>
+</html>

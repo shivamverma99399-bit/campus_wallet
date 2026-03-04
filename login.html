@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Wallet — Login</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .back-link {
+      position: fixed; top: 20px; left: 20px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem; color: var(--muted);
+      cursor: pointer; letter-spacing: 0.15em;
+      text-decoration: none; display: flex;
+      align-items: center; gap: 8px;
+      transition: color 0.2s; z-index: 10;
+    }
+    .back-link:hover { color: var(--blue); }
+    .login-left-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.2rem; font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .login-left-sub {
+      font-size: 0.85rem; color: var(--muted);
+      line-height: 1.6; max-width: 220px;
+      text-align: center;
+    }
+    .login-features {
+      margin-top: 30px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .login-feat {
+      display: flex; align-items: center; gap: 10px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem; color: rgba(255,255,255,0.5);
+      letter-spacing: 0.1em;
+    }
+    .feat-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+      flex-shrink: 0;
+    }
+    .login-form-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.1rem; font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .login-form-sub {
+      color: var(--muted); font-size: 0.85rem;
+      margin-bottom: 30px; font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem; letter-spacing: 0.1em;
+    }
+    .forgot-link {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem; color: var(--blue);
+      cursor: pointer; letter-spacing: 0.1em;
+      display: block; text-align: right;
+      margin-top: -12px; margin-bottom: 20px;
+      text-decoration: none;
+    }
+    .biometric-row {
+      display: flex; gap: 12px; margin-top: 16px;
+    }
+    .bio-btn {
+      flex: 1; padding: 12px;
+      background: rgba(59,130,246,0.07);
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: 10px;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 6px;
+      cursor: pointer; transition: all 0.2s;
+      color: var(--muted);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.6rem; letter-spacing: 0.1em;
+    }
+    .bio-btn:hover { border-color: var(--blue); color: var(--blue); background: rgba(59,130,246,0.12); }
+    .bio-btn span { font-size: 1.4rem; }
+    .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: var(--muted); font-size: 0.75rem; font-family: 'Share Tech Mono', monospace; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(59,130,246,0.15); }
+  </style>
+</head>
+<body data-page="login">
+
+<div id="loader" class="loader-overlay">
+  <div class="loader-ring"></div>
+  <div class="loader-text">AUTHENTICATING NODE...</div>
+</div>
+
+<div class="scanline"></div>
+
+<div class="bg-layer">
+  <div class="bg-gradient"></div>
+  <div class="cyber-grid"></div>
+</div>
+
+<div class="particles"></div>
+
+<a href="onboarding.html" class="back-link">← BACK</a>
+
+<div class="page" style="padding: 20px;">
+  <div class="login-container fade-in">
+
+    <!-- LEFT PANEL -->
+    <div class="login-left">
+      <div class="login-orb">⬡</div>
+      <div class="login-left-text">
+        <div class="login-left-title gradient-text">CAMPUS WALLET</div>
+        <p class="login-left-sub">Your decentralized gateway to the ALGO network</p>
+      </div>
+      <div class="login-features">
+        <div class="login-feat"><div class="feat-dot"></div>ALGO MAINNET CONNECTED</div>
+        <div class="login-feat"><div class="feat-dot"></div>256-BIT ENCRYPTION</div>
+        <div class="login-feat"><div class="feat-dot"></div>ZERO-KNOWLEDGE PROOF</div>
+        <div class="login-feat"><div class="feat-dot" style="background: var(--blue); box-shadow: 0 0 8px var(--blue)"></div>REAL-TIME SYNC</div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="login-right">
+      <div class="login-form-title">Access Wallet</div>
+      <div class="login-form-sub">> ENTER YOUR CREDENTIALS TO AUTHENTICATE</div>
+
+      <form id="loginForm">
+
+        <div class="input-group">
+          <label>// WALLET.address</label>
+          <input type="text" id="walletAddr" class="cyber-input"
+            placeholder="ABCD1234...XY78" autocomplete="off">
+        </div>
+
+        <div class="input-group">
+          <label>// SECURITY.password</label>
+          <input type="password" id="loginPass" class="cyber-input"
+            placeholder="••••••••••••" autocomplete="current-password">
+        </div>
+
+        <a href="#" class="forgot-link" onclick="showToast('Recovery instructions sent to your backup key', 'info'); return false;">
+          FORGOT PASSPHRASE? →
+        </a>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 0.8rem; padding: 16px;">
+          <div class="spinner"></div>
+          <span class="btn-text">◈ &nbsp;AUTHENTICATE</span>
+        </button>
+
+      </form>
+
+      <div class="divider">OR SIGN IN WITH</div>
+
+      <div class="biometric-row">
+        <button class="bio-btn" onclick="handleBiometric('fingerprint')">
+          <span>👆</span>FINGERPRINT
+        </button>
+        <button class="bio-btn" onclick="handleBiometric('face')">
+          <span>👤</span>FACE ID
+        </button>
+        <button class="bio-btn" onclick="handleBiometric('key')">
+          <span>🔑</span>PASSKEY
+        </button>
+      </div>
+
+      <p style="text-align:center; margin-top: 24px; font-size: 0.8rem; color: var(--muted);">
+        New here? <a href="create.html" style="color: var(--blue); text-decoration: none;">Create a wallet →</a>
+      </p>
+
+    </div>
+  </div>
+</div>
+
+<script src="js/script.js"></script>
+<script>
+function handleBiometric(type) {
+  const labels = { fingerprint: 'Fingerprint scan initiated...', face: 'Face ID scan initiated...', key: 'Passkey authentication...' };
+  showToast(labels[type], 'info');
+  setTimeout(() => {
+    const user = getUser() || (() => {
+      const addr = generateWalletAddress();
+      const u = { username: 'BiometricUser', address: addr, balance: (Math.random() * 5000 + 200).toFixed(2), created: Date.now() };
+      saveUser(u); return u;
+    })();
+    showToast('Biometric auth successful!', 'success');
+    setTimeout(() => window.location.href = 'dashboard.html', 600);
+  }, 1500);
+}
+</script>
+</body>
+</html>
